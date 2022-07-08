@@ -1,0 +1,12 @@
+name: renhealth-docnew
+version: 1.0.0
+appVersion: 1.0.1
+description: WebSite for Doctors
+keywords:
+  - BUDU
+  - website
+  - service
+home: https://gitlab.dev.renhealth.com/renhealth/docnew
+maintainers:
+  - name: Alex Insayt
+    email: aleksandr.insajt@budu.ru

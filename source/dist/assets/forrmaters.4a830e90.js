@@ -1,0 +1,1 @@
+function r(t){const{firstName:n="",lastName:o="",middleName:e=""}=t||{};return`${o} ${n} ${e}`.trim()}function i(t){const o=["Bytes","KB","MB","GB","TB"];if(t<=0)return"0 Bytes";const e=parseInt(String(Math.floor(Math.log(t)/Math.log(1e3))),10);return o[e]?(t/Math.pow(1e3,e)).toPrecision(3)+" "+o[e]:"0 Bytes"}export{i as b,r as f};

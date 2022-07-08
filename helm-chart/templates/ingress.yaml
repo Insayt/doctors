@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: {{ default .Release.Name .Values.gl_environment_slug }}
+  labels:
+    {{- if eq .Release.Namespace "development" }}
+    app.gitlab.com/app: {{ default .Release.Name .Values.gl_project_path_slug }}
+    app.gitlab.com/env: {{ default .Release.Namespace .Values.gl_environment_slug }}
+    {{- else }}
+    app: {{ .Release.Name }}
+    {{- end }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+    ingress: {{ default .Release.Name .Values.gl_environment_slug }}
+spec:
+  rules:
+  {{- if eq .Release.Namespace "production" }}
+  - host: {{ .Release.Name }}.k8s.prod.renhealth
+  {{- else if .Values.gl_commit_ref_slug }}
+  - host: {{ .Values.gl_commit_ref_slug }}.{{ .Values.project }}-{{ .Values.service }}.k8s.dev.renhealth
+  {{- end }}
+    http:
+      paths:
+      - backend:
+          serviceName: {{ default .Release.Name .Values.gl_environment_slug }}
+          servicePort: {{ default "80" .Values.port }}

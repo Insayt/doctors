@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ default .Release.Name .Values.gl_environment_slug }}
+  labels:
+    {{- if eq .Release.Namespace "development" }}
+    app.gitlab.com/app: {{ default .Release.Name .Values.gl_project_path_slug }}
+    app.gitlab.com/env: {{ default .Release.Namespace .Values.gl_environment_slug }}
+    {{- else }}
+    app: {{ .Release.Name }}
+    {{- end }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  {{- if eq .Release.Namespace "production" }}
+  replicas: 2
+  {{- else }}
+  replicas: 1
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- if eq .Release.Namespace "development" }}
+      app.gitlab.com/app: {{ default .Release.Name .Values.gl_project_path_slug }}
+      app.gitlab.com/env: {{ default .Release.Namespace .Values.gl_environment_slug }}
+      {{- else }}
+      app: {{ .Release.Name }}
+      {{- end }}
+      environment: {{ .Release.Namespace }}
+      project: {{ .Values.project }}
+      service: {{ .Values.service }}
+      instance: {{ .Release.Name }}
+  template:
+    metadata:
+      name: {{ .Release.Name }}
+      labels:
+        {{- if eq .Release.Namespace "development" }}
+        app.gitlab.com/app: {{ default .Release.Name .Values.gl_project_path_slug }}
+        app.gitlab.com/env: {{ default .Release.Namespace .Values.gl_environment_slug }}
+        {{- else }}
+        app: {{ .Release.Name }}
+        {{- end }}
+        environment: {{ .Release.Namespace }}
+        project: {{ .Values.project }}
+        service: {{ .Values.service }}
+        instance: {{ .Release.Name }}
+        version: {{ .Values.version }}
+    spec:
+      imagePullSecrets:
+      - name: gitlab-registry
+      containers:
+      - name: {{ default .Release.Name .Values.gl_environment_slug }}
+        image: "{{ .Values.image }}:{{ .Values.version }}"
+        env:
+          - name: NODE_ENV
+          {{- if eq .Release.Namespace "development" }}
+            value: "development"
+          {{- else }}
+            value: "production"
+          {{- end }}
+          - name: secret_asvc
+            valueFrom:
+              secretKeyRef:
+                name: rh-secret-asvc
+                key: password
+          {{- range $environmentKey, $environmentValue := .Values.environment }}
+          - name: {{ $environmentKey }}
+            value: {{ tpl ($environmentValue | quote) $ }}
+          {{- end }}
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 80
+          initialDelaySeconds: {{ default "5" .Values.readinessProbeInitialDelay }}
+          periodSeconds: {{ default "5" .Values.readinessProbePeriod }}
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 80
+          initialDelaySeconds: {{ default "15" .Values.livenessProbeInitialDelay }}
+          periodSeconds: {{ default "30" .Values.livenessProbePeriod }}
+      restartPolicy: Always
+{{ include "affinity" . | indent 6 }}

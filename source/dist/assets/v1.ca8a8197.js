@@ -1,0 +1,1 @@
+var n=(r=>(r.TELEMED="TELEMED",r))(n||{}),e=(r=>(r.None="None",r.ConsultAvailable="ConsultAvailable",r.AskForPainScale="AskForPainScale",r.IsUrgently="IsUrgently",r.IsDirectly="IsDirectly",r))(e||{});export{n as F,e as S};

@@ -1,0 +1,8 @@
+project: renhealth
+service: docnew
+image: registry.dev.renhealth.com/renhealth/docnew
+version: latest
+environment:
+  NODE_ENV: production
+  LOG_TO_KIBANA: yes
+  REF_BRANCH: master
